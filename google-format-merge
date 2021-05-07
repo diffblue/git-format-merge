@@ -1,7 +1,55 @@
 #!/bin/bash
 
+if [ "$1" == "--help" ]
+then
+cat << EOF
+This is a git merge driver that helps to rebase or merge git branches where
+there are conflicts caused by changes to google-java-format formatting that
+have been applied to your target branch.
+
+To use this:
+
+1. Download the all-deps jar of Google Java Format from:
+  https://github.com/google/google-java-format/releases
+  and save it alongside this script
+
+2. Replace your git commands with path/to/git-format-wrapper, e.g.
+
+  path/to/git-format-wrapper rebase origin/develop
+  path/to/git-format-wrapper rebase --continue
+
+Note that it is important to use it on --continue - it won't be remembered
+for the whole rebase if you apply it only to the initial rebase command.
+Also if you have tried to merge in the normal way and got conflicts run
+git rebase --abort before trying the wrapper.
+
+The tool works by applying google-java-format to the 3 inputs to a merge - the
+version you are merging into (but this will normally already have it applied),
+the version you are merging from (your code), and the common ancestor of the
+two.
+
+To set up manually and permanently (not recommended as it is quite slow, but
+useful if you have a whole batch of branches to rebase or something):
+
+In .git/config add the lines:
+
+[merge "google-format"]
+  name = google-format merge driver
+  driver = /path/to/google-format-merge %O %A %B %P
+  recursive = binary
+
+In .git/info/attributes add the line:
+
+*.java merge=google-format
+
+Based on https://github.com/emilio/clang-format-merge
+EOF
+exit 0
+fi
+
 if [ $# -ne 4 ]; then
   echo "usage: google-format-merge %O %A %B %P";
+  echo "For more information, run: google-format-merge --help";
   exit 1
 fi
 
