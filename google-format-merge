@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [ $# -ne 4 ]; then
+  echo "usage: google-format-merge %O %A %B %P";
+  exit 1
+fi
+
+GOOGLE_JAVA_FORMAT_JARS=( "$(dirname "$0")"/google-java-format-*-all-deps.jar )
+GOOGLE_JAVA_FORMAT_JAR="${GOOGLE_JAVA_FORMAT_JARS[0]}"
+
+if [ ! -f "$GOOGLE_JAVA_FORMAT_JAR" ]
+then
+  echo "Please download the all-deps jar of Google Java Format from:"
+  echo "https://github.com/google/google-java-format/releases"
+  echo "and save it alongside this script"
+  exit 1
+fi
+
+BASE="$1"
+OURS="$2"
+OTHERS="$3"
+REPO_PATH="$4"
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+echo "Merging $REPO_PATH in repo $ROOT"
+
+mv "$OURS" "$OURS.java"
+mv "$BASE" "$BASE.java"
+mv "$OTHERS" "$OTHERS.java"
+
+java -jar "$GOOGLE_JAVA_FORMAT_JAR" --replace "$OURS.java" "$BASE.java" "$OTHERS.java"
+
+mv "$OURS.java" "$OURS"
+mv "$BASE.java" "$BASE"
+mv "$OTHERS.java" "$OTHERS"
+
+git merge-file -Lcurrent -Lbase -Lothers "$OURS" "$BASE" "$OTHERS"
+exit $?

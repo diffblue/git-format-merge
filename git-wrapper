@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script just wraps git, setting up the 'clang-format-merge' handler. It
+# This script just wraps git, setting up the 'google-format-merge' handler. It
 # should act like git for most purposes.
 #
 # Use this like |path/to/git-wrapper.sh rebase mozcentral|.
@@ -11,9 +11,9 @@ ROOT="$(git rev-parse --show-toplevel)"
 function cleanup {
     if [ -n "$R_CONFIGS_SET" ]; then
         echo "wrapper> Cleaning up configs" >&2
-        git config --unset merge.clang-format.name
-        git config --unset merge.clang-format.driver
-        git config --unset merge.clang-format.recursive
+        git config --unset merge.google-format.name
+        git config --unset merge.google-format.driver
+        git config --unset merge.google-format.recursive
     fi
 
     if [ -n "$R_GITATTRIBUTES" ]; then
@@ -27,13 +27,13 @@ function cleanup {
 trap cleanup EXIT
 
 SOURCE="${BASH_SOURCE[0]}"
-MERGE_DRIVER="$(dirname "$SOURCE")/clang-format-merge"
+MERGE_DRIVER="$(dirname "$SOURCE")/google-format-merge"
 
 # Updating git config to install merge driver
 echo "wrapper> Setting Configs" >&2
-git config merge.clang-format.name "clang-format driver"
-git config merge.clang-format.driver "$MERGE_DRIVER %O %A %B %P"
-git config merge.clang-format.recursive "binary"
+git config merge.google-format.name "google-format driver"
+git config merge.google-format.driver "$MERGE_DRIVER %O %A %B %P"
+git config merge.google-format.recursive "binary"
 R_CONFIGS_SET=1
 
 # Write out gitattributes
@@ -43,9 +43,7 @@ fi
 
 echo "wrapper> Adding $ROOT/.git/info/attributes" >&2
 cat >> "$ROOT/.git/info/attributes" <<EOF
-*.cpp merge=clang-format
-*.h   merge=clang-format
-*.mm  merge=clang-format
+*.java merge=google-format
 EOF
 R_GITATTRIBUTES=1
 
